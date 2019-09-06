@@ -1,7 +1,8 @@
-var net = require('net');
+const net = require('net');
+const fs = require('fs');
 
-var HOST = '127.0.0.1';
-var PORT = 6969;
+const HOST = '0.0.0.0';
+const PORT = 6969;
 
 // Create a server instance, and chain the listen function to it
 // The function passed to net.createServer() becomes the event handler for the 'connection' event
@@ -12,8 +13,26 @@ net.createServer(function(sock) {
   // Add a 'data' event handler to this instance of socket
   sock.on('data', function(data) {
     console.log('DATA ' + sock.remoteAddress + ': ' + data);
+    fs.readFile('inndex.html', (err, fileContent) => {
+      if (err) {
+        sock.write(`HTTP/1.1 404 Not Found
+Content-Type: text/html
+Connection: keep-alive        
+
+<h1>404: File not found</h1>
+`)
+      } else {
+        sock.write(`HTTP/1.1 200 OK
+Content-Type: text/html
+Connection: keep-alive
+
+${fileContent}
+`); 
+      };
+      
+    })
     // Write the data back to the socket, the client will receive it as data from the server
-    sock.write('You said "' + data + '"');
+   
   });
   // Add a 'close' event handler to this instance of socket
  sock.on('close', function(data) {
